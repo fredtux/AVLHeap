@@ -71,7 +71,7 @@ int extractMin(){
 }
 
 int main() {
-    vector<int> v = {3, 2, 1, 15, 5, 4, 45};
+    vector<int> v = {10,20,30,40,50,25};
 
     heapify(v);
 

@@ -1,0 +1,4 @@
+break /home/tux/Desktop/Facultate/StructuriDeDate/Tema3/Implementare/main.cpp:277
+break /home/tux/Desktop/Facultate/StructuriDeDate/Tema3/Implementare/main.cpp:240
+
+set exec-wrapper The wrapper for running programs is \
