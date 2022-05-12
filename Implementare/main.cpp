@@ -10,12 +10,13 @@
  *
  */
 
+#define intmin -0x7FFFFFFF
+
 using namespace std;
 
 struct Node {
     int key;
     int height;
-    Node *parent;
     Node *left;
     Node *right;
 };
@@ -27,7 +28,6 @@ inline int height(Node *n) {
 Node *newNode(int key) {
     Node *node = new Node();
     node->key = key;
-    node->parent = NULL;
     node->left = NULL;
     node->right = NULL;
     node->height = 1; // frunza
@@ -178,10 +178,50 @@ Node *insert(Node *node, int key) {
         return result;
 }
 
+int updateHeight(Node *root, int h) {
+    if(root == nullptr)
+        return h;
+
+    root->height = 1 + max(updateHeight(root->left, (h + 1)), updateHeight(root->right, (h + 1)));
+    return root->height;
+}
+
+void removeElement(Node *&root){
+    bool left = true;
+
+    Node *tmp = root;
+    Node *tmp2 = tmp;
+    while (tmp->left != nullptr || tmp->right != nullptr) {
+        if ((tmp->left == nullptr ? intmin : tmp->left->key) > (tmp->right == nullptr ? intmin : tmp->right->key)) {
+            tmp2 = tmp;
+            tmp = tmp->left;
+            left = true;
+        } else {
+            tmp2 = tmp;
+            tmp = tmp->right;
+            left = false;
+        }
+    }
+
+    swap(root->key, tmp->key);
+
+    if (left) {
+        tmp2->left = nullptr;
+        if (tmp2->right == nullptr) {
+            updateHeight(root, 1);
+        }
+    } else {
+        tmp2->right = nullptr;
+        if (tmp2->left == nullptr) {
+            updateHeight(root, 1);
+        }
+    }
+    delete tmp;
+}
 
 int extractMin(Node *&root) {
     if (root == nullptr)
-        return -0x7FFFFFFF;
+        return intmin;
 
     int result = root->key;
 
@@ -190,31 +230,7 @@ int extractMin(Node *&root) {
         return result;
     }
 
-
-    bool left = true;
-
-    Node *tmp = root;
-    Node *tmp2 = tmp;
-    while (tmp->left != nullptr || tmp->right != nullptr) {
-        if (tmp->left != nullptr) {
-            swap(tmp->key, tmp->left->key);
-            tmp2 = tmp;
-            tmp = tmp->left;
-            left = true;
-        } else {
-            swap(tmp->key, tmp->right->key);
-            tmp2 = tmp;
-            tmp = tmp->right;
-            left = false;
-        }
-    }
-
-    if (left) {
-        tmp2->left = nullptr;
-    } else {
-        tmp2->right = nullptr;
-    }
-    delete tmp;
+    removeElement(root);
 
     percolate_down(root);
 
@@ -244,11 +260,45 @@ Node *dfs(Node *root, int &key) {
         return result;
 }
 
+void quietlyRemoveNode(Node *&root, Node *&node, Node *&start){
+    if(start == nullptr)
+        return;
+
+    if(start->left != nullptr && start->left == node){
+        start->left = nullptr;
+        delete node;
+
+        if(start->right == nullptr)
+            updateHeight(root, 1);
+        return;
+    }
+
+    if(start->right != nullptr && start->right == node){
+        start->right = nullptr;
+        delete node;
+
+        if(start->left == nullptr)
+            updateHeight(root, 1);
+        return;
+    }
+
+    quietlyRemoveNode(root, node, start->left);
+    quietlyRemoveNode(root, node, start->right);
+}
+
 void deleteFromAVLHeap(Node *&root, int key) {
+    if(root->key == key) {
+        extractMin(root);
+        return;
+    }
+    
     Node *node = dfs(root, key);
 
-    swap(root->key, node->key);
-    extractMin(root);
+    if(node->left == nullptr && node->right == nullptr) {
+        quietlyRemoveNode(root, node, root);
+    } else {
+        removeElement(node);
+    }
 }
 
 void preOrder(Node *root) {
@@ -279,6 +329,7 @@ int main() {
     Node *root;
 
     //// Exemplul 1
+    // Insert + Extragere minim
     cout << "\n############## EXEMPLUL 1 ##############\n";
 
     root = nullptr;
@@ -290,6 +341,7 @@ int main() {
     root = insert(root, 50);
     root = insert(root, 25);
 
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
@@ -297,30 +349,35 @@ int main() {
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
@@ -328,12 +385,14 @@ int main() {
 
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
     cout << extractMin(root) << "\n";
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
@@ -341,6 +400,7 @@ int main() {
 
 
     //// Exemplul 2
+    // Insert + Extragere minim + Delete
     cout << "\n############## EXEMPLUL 2 ##############\n";
 
     root = nullptr;
@@ -358,28 +418,36 @@ int main() {
 
     cout << "\n\n";
 
-    cout << extractMin(root) << "\n";
     deleteFromAVLHeap(root, 20);
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
-    cout << extractMin(root) << "\n";
     deleteFromAVLHeap(root, 40);
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
-    cout << extractMin(root) << "\n";
+    extractMin(root);
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
     cout << "\n\n";
 
+    deleteFromAVLHeap(root, 25);
+    cout << "Parcurgere in preordine: ";
+    preOrder(root);
+    cout << "\n";
+    printBT("", root, false);
+    cout << "\n\n";
 
     //// Exemplul 3
+    // Insert
     cout << "\n############## EXEMPLUL 3 ##############\n";
 
     root = nullptr;
@@ -387,6 +455,7 @@ int main() {
     root = insert(root, 2);
     root = insert(root, 3);
     root = insert(root, 1);
+    cout << "Parcurgere in preordine: ";
     preOrder(root);
     cout << "\n";
     printBT("", root, false);
