@@ -1,5 +1,4 @@
 #include <iostream>
-#include <vector>
 
 /**
  * Surse de inspiratie
@@ -11,6 +10,7 @@
  */
 
 #define intmin -0x7FFFFFFF
+#define intmax 0x7FFFFFFF
 
 using namespace std;
 
@@ -117,9 +117,18 @@ void percolate_down(Node *node) {
     }
 }
 
-Node *avl(Node *node, Node *result, int &key) {
+int updateHeight(Node *root, int h) {
+    if(root == nullptr)
+        return 0;
+
+    root->height = 1 + max(updateHeight(root->left, (h + 1)), updateHeight(root->right, (h + 1)));
+    return root->height;
+}
+
+Node *avl(Node *node, Node *result, int &key, Node *root) {
     // Actualizare height
-    node->height = 1 + max(height(node->left), height(node->right));
+//    node->height = 1 + max(height(node->left), height(node->right));
+    updateHeight(root, 1);
 
     // Balanta
     int balance = getBalance(node);
@@ -171,19 +180,11 @@ Node *insert(Node *node, int key) {
 
     percolate_down(node);
 
-    result = avl(node, result, node->key);
+    result = avl(node, result, node->key, node);
     if (result == nullptr)
         return node;
     else
         return result;
-}
-
-int updateHeight(Node *root, int h) {
-    if(root == nullptr)
-        return h;
-
-    root->height = 1 + max(updateHeight(root->left, (h + 1)), updateHeight(root->right, (h + 1)));
-    return root->height;
 }
 
 void removeElement(Node *&root){
@@ -192,7 +193,7 @@ void removeElement(Node *&root){
     Node *tmp = root;
     Node *tmp2 = tmp;
     while (tmp->left != nullptr || tmp->right != nullptr) {
-        if ((tmp->left == nullptr ? intmin : tmp->left->key) > (tmp->right == nullptr ? intmin : tmp->right->key)) {
+        if ((tmp->left == nullptr ? intmax : tmp->left->key) < (tmp->right == nullptr ? intmax : tmp->right->key)) {
             tmp2 = tmp;
             tmp = tmp->left;
             left = true;
@@ -236,7 +237,7 @@ int extractMin(Node *&root) {
 
     int key = root->key;
     Node *result2 = new Node();
-    result2 = avl(root, result2, key);
+    result2 = avl(root, result2, key, root);
     if (result2 != nullptr)
         root = result2;
 
