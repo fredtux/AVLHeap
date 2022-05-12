@@ -1,0 +1,3 @@
+/home/tux/Desktop/Facultate/StructuriDeDate/Tema3/Implementare/cmake-build-debug/CMakeFiles/Implementare.dir
+/home/tux/Desktop/Facultate/StructuriDeDate/Tema3/Implementare/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/tux/Desktop/Facultate/StructuriDeDate/Tema3/Implementare/cmake-build-debug/CMakeFiles/rebuild_cache.dir
